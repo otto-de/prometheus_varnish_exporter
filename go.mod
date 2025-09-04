@@ -1,4 +1,4 @@
-module github.com/jonnenauha/prometheus_varnish_exporter
+module github.com/otto-de/prometheus_varnish_exporter
 
 go 1.12
 
