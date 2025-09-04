@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.com/jonnenauha/prometheus_varnish_exporter.svg?branch=master)](https://travis-ci.com/github/jonnenauha/prometheus_varnish_exporter)
-
 # Varnish exporter for Prometheus
 
 ![Grafana example](dashboards/jonnenauha/dashboard.png)
@@ -16,7 +14,7 @@ I won't make any backwards compatibility promises at this point. Your built quer
 
 # Installing and running
 
-You can find the latest binary releases for linux, darwin, windows, freebsd, openbsd and netbsd from the [github releases page](https://github.com/jonnenauha/prometheus_varnish_exporter/releases).
+You can find the latest binary releases for linux, darwin, windows, freebsd, openbsd and netbsd from the [github releases page](https://github.com/otto-de/prometheus_varnish_exporter/releases).
 
 By default the exporter listens on port 9131. See `prometheus_varnish_exporter -h` for available options.
 
@@ -30,7 +28,7 @@ To test that `varnishstat` is found on the host machine and to preview all expor
 >
 > 2020/12/18 20:22:33 [FATAL] Startup test: varnishstat scrape failed: exit status 1
 
-User you are executing as can't find or access varnish services. `sudo` is a hammer that works, see for proper solutions [#62](https://github.com/jonnenauha/prometheus_varnish_exporter/issues/62).
+User you are executing as can't find or access varnish services. `sudo` is a hammer that works, see for proper solutions [#62](https://github.com/otto-de/prometheus_varnish_exporter/issues/62).
 
 # Docker
 
@@ -38,7 +36,7 @@ Scraping metrics from Varnish running in a docker container is possible since 1.
 
     prometheus_varnish_exporter -docker-container-name <container_name>
 
-I still don't have a easy, clear and user friendly way of running this exporter in a docker container. For community efforts and solutions see [this issue](https://github.com/jonnenauha/prometheus_varnish_exporter/issues/25#issuecomment-492546458).
+I still don't have a easy, clear and user friendly way of running this exporter in a docker container. For community efforts and solutions see [this issue](https://github.com/otto-de/prometheus_varnish_exporter/issues/25#issuecomment-492546458).
 
 # Grafana dashboards
 
@@ -67,7 +65,7 @@ To aggregate all loaded VCLs into per-backend metric the following Prometheus [r
 
 This repot support go modules so out of `GOPATH` builds are supported. This makes development and buildings easier for go "novices".
 
-You need go 1.11 or higher, otherwise you can keep using `GOPATH` based development ([see old README](https://github.com/jonnenauha/prometheus_varnish_exporter/blob/1.4.1/README.md#build)).
+You need go 1.11 or higher, otherwise you can keep using `GOPATH` based development ([see old README](https://github.com/otto-de/prometheus_varnish_exporter/blob/1.4.1/README.md#build)).
 
 1. [Install latest go](https://golang.org/doc/install) or use OS repos `golang` package.
 
@@ -75,7 +73,7 @@ You need go 1.11 or higher, otherwise you can keep using `GOPATH` based developm
 
 ```bash
 # clone
-git clone git@github.com:jonnenauha/prometheus_varnish_exporter.git
+git clone git@github.com:otto-de/prometheus_varnish_exporter.git
 cd prometheus_varnish_exporter
 
 # build binary to current directory
