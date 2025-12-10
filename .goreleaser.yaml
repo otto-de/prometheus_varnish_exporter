@@ -1,23 +1,17 @@
-# This is an example .goreleaser.yml file with some sensible defaults.
-# Make sure to check the documentation at https://goreleaser.com
-
-# The lines below are called `modelines`. See `:help modeline`
-# Feel free to remove those if you don't want/need to use them.
-# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
-# vim: set ts=2 sw=2 tw=0 fo=cnqoj
-
 project_name: prometheus-varnish-exporter
 version: 2
 
 before:
   hooks:
-    # You may remove this if you don't use go modules.
     - go mod tidy
 
 builds:
   - binary: prometheus-varnish-exporter
     env:
       - CGO_ENABLED=0
+    goarch:
+      - amd64
+      - arm64
     goos:
       - linux
       - windows
@@ -106,8 +100,8 @@ changelog:
   sort: asc
   filters:
     exclude:
-      - "^docs:"
-      - "^test:"
+      - "^docs"
+      - "^test"
 
 release:
   footer: >-
