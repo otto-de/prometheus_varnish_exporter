@@ -40,10 +40,10 @@ type startParams struct {
 	VarnishDockerContainer string
 	Params                 *varnishstatParams
 
-	Verbose       bool
+	Verbose       bool // deprecated
 	ExitOnErrors  bool
 	Test          bool
-	Raw           bool
+	Raw           bool // deprecated
 	WithGoMetrics bool
 
 	// logging
@@ -100,6 +100,8 @@ func main() {
 	flag.BoolVar(&StartParams.WithGoMetrics, "with-go-metrics", StartParams.WithGoMetrics, "Export go runtime and http handler metrics")
 
 	// deprecated
+	flag.BoolVar(&StartParams.Raw, "raw", StartParams.Test, "Deprecated: Raw stdout logging without timestamps.")
+	flag.BoolVar(&StartParams.Verbose, "verbose", StartParams.Verbose, "Deprecated: Verbose logging.")
 	flag.BoolVar(&StartParams.noExit, "no-exit", StartParams.noExit, "Deprecated: see -exit-on-errors")
 
 	flag.Parse()
@@ -109,7 +111,11 @@ func main() {
 		os.Exit(0)
 	}
 
-	logger = log.New(os.Stdout, "", log.Ldate|log.Ltime)
+	if StartParams.Verbose || StartParams.Raw {
+		slog.Warn("-verbose and -raw are deprecated and have no effect. Use -log-level=debug and -log-json=false instead.")
+	}
+
+	initSlogger(StartParams.LogLevel, StartParams.LogJSON)
 
 	if len(StartParams.Path) == 0 || StartParams.Path[0] != '/' {
 		logFatal("-web.telemetry-path cannot be empty and must start with a slash '/'", "path", StartParams.Path)
