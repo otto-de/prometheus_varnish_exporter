@@ -38,6 +38,15 @@ Scraping metrics from Varnish running in a docker container is possible since 1.
 
 I still don't have a easy, clear and user friendly way of running this exporter in a docker container. For community efforts and solutions see [this issue](https://github.com/otto-de/prometheus_varnish_exporter/issues/25#issuecomment-492546458).
 
+## Images
+
+Container images are built and published to our GHCR registry as part of the release process. Images are built for
+multiple architectures (amd64, arm64) and for the latest major Varnish/Vinyl versions.
+
+The image tags are in the format `<version>-varnish-<varnish-version>`. For example `1.7.0-varnish-8.0.0`.
+
+[ghcr.io/otto-de/prometheus-varnish-exporter](https://github.com/orgs/otto-de/packages/container/package/prometheus-varnish-exporter)
+
 # Grafana dashboards
 
 You can download my dashboard seen in the above picture [here](dashboards/jonnenauha/dashboard.json). I use it at work with our production Varnish instances. I would be interested in your dashboards if you wish to share them or improvement ideas to my current one.
