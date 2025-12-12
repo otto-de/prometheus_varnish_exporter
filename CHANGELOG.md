@@ -1,3 +1,9 @@
+# v1.7.0
+
+- Add `goreleaser` based release process
+- Start building releases with go 1.25.x
+- Update github.com/prometheus/client_golang dependency to v1.23.2
+
 # 1.6.1
 
 - Fix duplicate counter errors on VLC reloads ([#70](https://github.com/jonnenauha/prometheus_varnish_exporter/pull/70) @LorenzoPeri)
