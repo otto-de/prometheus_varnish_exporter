@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log/slog"
 	"regexp"
 	"strings"
 	"sync"
@@ -52,9 +53,7 @@ func (pe *prometheusExporter) Describe(ch chan<- *prometheus.Desc) {
 		ch <- pe.version.Desc()
 	}
 
-	if StartParams.Verbose {
-		logInfo("prometheus.Collector.Describe  %s", time.Now().Sub(start))
-	}
+	slog.Debug("prometheus.Collector.Describe", "duration", time.Now().Sub(start))
 }
 
 // Implements prometheus.Collector
@@ -84,7 +83,7 @@ func (pe *prometheusExporter) Collect(ch chan<- prometheus.Metric) {
 
 	if err == nil {
 		if hadError {
-			logInfo("Successful scrape")
+			slog.Info("Successful scrape")
 		}
 		pe.up.Set(1)
 	} else {
@@ -96,13 +95,10 @@ func (pe *prometheusExporter) Collect(ch chan<- prometheus.Metric) {
 		ch <- pe.version
 	}
 
-	if StartParams.Verbose {
-		postfix := ""
-		if err != nil {
-			postfix = " (scrape failed)"
-		}
-		logInfo("prometheus.Collector.Collect   %s%s", time.Now().Sub(start), postfix)
+	if err != nil {
+		slog.Error("prometheus.Collector.Collect scrape failed", "error", err)
 	}
+	slog.Debug("prometheus.Collector.Collect", "duration", time.Now().Sub(start))
 }
 
 // utils
@@ -229,7 +225,7 @@ func cleanBackendName(name string) string {
 	if strings.HasPrefix(name, "reload_") {
 		dot := strings.Index(name, ".")
 		if dot != -1 {
-			name = name[dot + 1:]
+			name = name[dot+1:]
 		}
 	}
 

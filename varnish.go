@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"os/exec"
 	"reflect"
 	"regexp"
@@ -103,16 +104,12 @@ func ScrapeVarnishFrom(buf []byte, ch chan<- prometheus.Metric) ([]byte, error) 
 			continue
 		}
 		if dt := reflect.TypeOf(raw); dt.Kind() != reflect.Map {
-			if StartParams.Verbose {
-				logWarn("Found unexpected data from json: %s: %#v", vName, raw)
-			}
+			slog.Warn("Found unexpected data from json", "name", vName, "raw", raw)
 			continue
 		}
 		data, ok := raw.(map[string]interface{})
 		if !ok {
-			if StartParams.Verbose {
-				logWarn("Failed to cast to map[string]interface{}: %s: %#v", vName, raw)
-			}
+			slog.Warn("Failed to cast to map[string]interface{}", "name", vName, "raw", raw)
 			continue
 		}
 		var (
@@ -150,9 +147,7 @@ func ScrapeVarnishFrom(buf []byte, ch chan<- prometheus.Metric) ([]byte, error) 
 			}
 		}
 		if vErr != nil {
-			if StartParams.Verbose {
-				logWarn(vErr.Error())
-			}
+			slog.Warn(vErr.Error())
 			continue
 		}
 

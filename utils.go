@@ -2,58 +2,44 @@ package main
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"strings"
 )
 
-// logging
-
-func logRaw(format string, args ...interface{}) {
-	fmt.Printf(format+"\n", args...)
+// SlogErrorLogger adapts slog.Logger to the interface expected by the prometheus client library for logging errors.
+type SlogErrorLogger struct {
+	logger *slog.Logger
 }
 
-func logTitle(format string, args ...interface{}) {
-	logInfo(format, args...)
+func (l *SlogErrorLogger) Println(v ...interface{}) {
+	l.logger.Error(fmt.Sprint(v...))
+}
 
-	title := strings.Repeat("-", len(fmt.Sprintf(format, args...)))
-	if len(title) > 0 {
-		logInfo(title)
+// initSlogger overwrites the global default slog instance
+func initSlogger(logLevel string, json bool) {
+	var handler slog.Handler
+	var level slog.Level
+	switch strings.ToUpper(logLevel) {
+	case "DEBUG":
+		level = slog.LevelDebug
+	case "WARN":
+		level = slog.LevelWarn
+	case "ERROR":
+		level = slog.LevelError
+	default:
+		level = slog.LevelInfo
 	}
-}
-
-func logInfo(format string, args ...interface{}) {
-	if StartParams.Raw {
-		logRaw(format, args...)
+	if json {
+		handler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: level})
 	} else {
-		logger.Printf(format, args...)
+		handler = slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: level})
 	}
+	slog.SetDefault(slog.New(handler))
 }
 
-func logWarn(format string, args ...interface{}) {
-	format = "[WARN] " + format
-	if StartParams.Raw {
-		logRaw(format, args...)
-	} else {
-		logger.Printf(format, args...)
-	}
-}
-
-func logError(format string, args ...interface{}) {
-	format = "[ERROR] " + format
-	if StartParams.Raw {
-		logRaw(format, args...)
-	} else {
-		logger.Printf(format, args...)
-	}
-}
-
-func logFatal(format string, args ...interface{}) {
-	format = "[FATAL] " + format
-	if StartParams.Raw {
-		logRaw(format, args...)
-	} else {
-		logger.Printf(format, args...)
-	}
+func logFatal(message string, args ...interface{}) {
+	slog.Error(message, args...)
 	os.Exit(1)
 }
 
