@@ -1,0 +1,111 @@
+project_name: prometheus-varnish-exporter
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - binary: prometheus-varnish-exporter
+    env:
+      - CGO_ENABLED=0
+    goarch:
+      - amd64
+      - arm64
+    goos:
+      - linux
+      - windows
+      - darwin
+
+
+archives:
+  - formats: [tar.gz]
+    # this name template makes the OS and Arch compatible with the results of `uname`.
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    # use zip for windows archives
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+
+dockers_v2:
+  - id: varnish-8.0.0
+    dockerfile: build/Dockerfile
+    extra_files:
+      - build/entrypoint.sh
+    images:
+      - ghcr.io/otto-de/prometheus-varnish-exporter
+    tags:
+      - "{{.Version}}-varnish-8.0.0"
+      - latest
+    build_args:
+      VARNISH_VERSION: 8.0.0
+    platforms:
+      - linux/amd64
+      - linux/arm64
+    labels:
+      "org.opencontainers.image.description": "prometheus compatible metrics exporter for varnish 8.0.0"
+      "org.opencontainers.image.created": "{{.Date}}"
+      "org.opencontainers.image.name": "{{.ProjectName}}"
+      "org.opencontainers.image.revision": "{{.FullCommit}}"
+      "org.opencontainers.image.version": "{{.Version}}"
+      "org.opencontainers.image.source": "{{.GitURL}}"
+  - id: varnish-7.7.3
+    dockerfile: build/Dockerfile
+    extra_files:
+      - build/entrypoint.sh
+    images:
+      - ghcr.io/otto-de/prometheus-varnish-exporter
+    tags:
+      - "{{.Version}}-varnish-7.7.3"
+    build_args:
+      VARNISH_VERSION: 7.7.3
+    platforms:
+      - linux/amd64
+      - linux/arm64
+    labels:
+      "org.opencontainers.image.description": "prometheus compatible metrics exporter for varnish 7.7.3"
+      "org.opencontainers.image.created": "{{.Date}}"
+      "org.opencontainers.image.name": "{{.ProjectName}}"
+      "org.opencontainers.image.revision": "{{.FullCommit}}"
+      "org.opencontainers.image.version": "{{.Version}}"
+      "org.opencontainers.image.source": "{{.GitURL}}"
+  - id: varnish-6.0.16
+    dockerfile: build/Dockerfile
+    extra_files:
+      - build/entrypoint.sh
+    images:
+      - ghcr.io/otto-de/prometheus-varnish-exporter
+    tags:
+      - "{{.Version}}-varnish-6.0.16"
+    build_args:
+      VARNISH_VERSION: 6.0.16
+    platforms:
+      - linux/amd64
+      - linux/arm64
+    labels:
+      "org.opencontainers.image.description": "prometheus compatible metrics exporter for varnish 6.0.16"
+      "org.opencontainers.image.created": "{{.Date}}"
+      "org.opencontainers.image.name": "{{.ProjectName}}"
+      "org.opencontainers.image.revision": "{{.FullCommit}}"
+      "org.opencontainers.image.version": "{{.Version}}"
+      "org.opencontainers.image.source": "{{.GitURL}}"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs"
+      - "^test"
+
+release:
+  footer: >-
+
+    ---
+
+    Released by [GoReleaser](https://github.com/goreleaser/goreleaser).

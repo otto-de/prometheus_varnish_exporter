@@ -79,6 +79,6 @@ cd prometheus_varnish_exporter
 # build binary to current directory
 go build
 
-# release with cross compilation
-./build.sh <version>
+# draft local release with cross compilation
+goreleaser release --snapshot --clean
 ```

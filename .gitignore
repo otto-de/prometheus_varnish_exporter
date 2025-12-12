@@ -1,5 +1,7 @@
-
 bin
 
+.idea/
 prometheus_varnish_exporter
 prometheus_varnish_exporter.exe
+# Added by goreleaser init:
+dist/
