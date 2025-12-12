@@ -112,7 +112,7 @@ func main() {
 	}
 
 	if StartParams.Verbose || StartParams.Raw {
-		slog.Warn("-verbose and -raw are deprecated and have no effect. Use -log-level=debug and -log-json=false instead.")
+		slog.Warn("-verbose and -raw are deprecated and have no effect. These flags will be removed in a future release. Use -log-level=debug and -log-json=false instead.")
 	}
 
 	initSlogger(StartParams.LogLevel, StartParams.LogJSON)
