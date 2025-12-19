@@ -334,9 +334,6 @@ func Test_VarnishMetrics_CI(t *testing.T) {
 		return
 	}
 
-	StartParams.Verbose = true
-	StartParams.Raw = true
-
 	if err := VarnishVersion.Initialize(); err != nil {
 		t.Fatal(err)
 	}

@@ -1,10 +1,9 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"sync"
@@ -29,8 +28,8 @@ var (
 		Path:           "/metrics",
 		VarnishstatExe: "varnishstat",
 		Params:         &varnishstatParams{},
+		LogLevel:       "info",
 	}
-	logger *log.Logger
 )
 
 type startParams struct {
@@ -41,11 +40,15 @@ type startParams struct {
 	VarnishDockerContainer string
 	Params                 *varnishstatParams
 
-	Verbose       bool
+	Verbose       bool // deprecated
 	ExitOnErrors  bool
 	Test          bool
-	Raw           bool
+	Raw           bool // deprecated
 	WithGoMetrics bool
+
+	// logging
+	LogLevel string
+	LogJSON  bool
 
 	noExit bool // deprecated
 }
@@ -85,16 +88,20 @@ func main() {
 	// docker
 	flag.StringVar(&StartParams.VarnishDockerContainer, "docker-container-name", StartParams.VarnishDockerContainer, "Docker container name to exec varnishstat in.")
 
+	// logging
+	flag.StringVar(&StartParams.LogLevel, "log-level", StartParams.LogLevel, "Log level: debug, info, warn, error")
+	flag.BoolVar(&StartParams.LogJSON, "log-json", StartParams.LogJSON, "Log in JSON format")
+
 	// modes
 	version := false
 	flag.BoolVar(&version, "version", version, "Print version and exit")
 	flag.BoolVar(&StartParams.ExitOnErrors, "exit-on-errors", StartParams.ExitOnErrors, "Exit process on scrape errors.")
-	flag.BoolVar(&StartParams.Verbose, "verbose", StartParams.Verbose, "Verbose logging.")
 	flag.BoolVar(&StartParams.Test, "test", StartParams.Test, "Test varnishstat availability, prints available metrics and exits.")
-	flag.BoolVar(&StartParams.Raw, "raw", StartParams.Test, "Raw stdout logging without timestamps.")
 	flag.BoolVar(&StartParams.WithGoMetrics, "with-go-metrics", StartParams.WithGoMetrics, "Export go runtime and http handler metrics")
 
 	// deprecated
+	flag.BoolVar(&StartParams.Raw, "raw", StartParams.Test, "Deprecated: Raw stdout logging without timestamps.")
+	flag.BoolVar(&StartParams.Verbose, "verbose", StartParams.Verbose, "Deprecated: Verbose logging.")
 	flag.BoolVar(&StartParams.noExit, "no-exit", StartParams.noExit, "Deprecated: see -exit-on-errors")
 
 	flag.Parse()
@@ -104,13 +111,17 @@ func main() {
 		os.Exit(0)
 	}
 
-	logger = log.New(os.Stdout, "", log.Ldate|log.Ltime)
+	if StartParams.Verbose || StartParams.Raw {
+		slog.Warn("-verbose and -raw are deprecated and have no effect. These flags will be removed in a future release. Use -log-level=debug and -log-json=false instead.")
+	}
+
+	initSlogger(StartParams.LogLevel, StartParams.LogJSON)
 
 	if len(StartParams.Path) == 0 || StartParams.Path[0] != '/' {
-		logFatal("-web.telemetry-path cannot be empty and must start with a slash '/', given %q", StartParams.Path)
+		logFatal("-web.telemetry-path cannot be empty and must start with a slash '/'", "path", StartParams.Path)
 	}
 	if len(StartParams.HealthPath) != 0 && StartParams.HealthPath[0] != '/' {
-		logFatal("-web.health-path must start with a slash '/' if configured, given %q", StartParams.HealthPath)
+		logFatal("-web.health-path must start with a slash '/' if configured", "path", StartParams.HealthPath)
 	}
 	if StartParams.Path == StartParams.HealthPath {
 		logFatal("-web.telemetry-path and -web.health-path cannot have same value")
@@ -118,26 +129,22 @@ func main() {
 
 	// Don't log warning on !noExit as that would spam for the formed default value.
 	if StartParams.noExit {
-		logWarn("-no-exit is deprecated. As of v1.5 it is the default behavior not to exit process on scrape errors. You can remove this parameter.")
+		slog.Warn("-no-exit is deprecated. As of v1.5 it is the default behavior not to exit process on scrape errors. You can remove this parameter.")
 	}
 
 	// Test run or user explicitly wants to exit on any scrape errors during runtime.
 	ExitHandler.exitOnError = StartParams.Test == true || StartParams.ExitOnErrors == true
 
-	if b, err := json.MarshalIndent(StartParams, "", "  "); err == nil {
-		logInfo("%s %s %s", ApplicationName, getVersion(false), b)
-	} else {
-		logFatal(err.Error())
-	}
+	slog.Info("Initializing application", "applicationName", ApplicationName, "applicationVersion", getVersion(false), "parameters", StartParams)
 
 	// Initialize
 	if err := VarnishVersion.Initialize(); err != nil {
 		ExitHandler.Errorf("Varnish version initialize failed: %s", err.Error())
 	}
 	if VarnishVersion.Valid() {
-		logInfo("Found varnishstat %s", VarnishVersion)
+		slog.Info("Found varnishstat.", "varnishVersion", VarnishVersion)
 		if err := PrometheusExporter.Initialize(); err != nil {
-			logFatal("Prometheus exporter initialize failed: %s", err.Error())
+			logFatal("Prometheus exporter initialize failed", "error", err.Error())
 		}
 	}
 
@@ -148,7 +155,7 @@ func main() {
 		go func() {
 			for m := range metrics {
 				if StartParams.Test {
-					logInfo("%s", m.Desc())
+					slog.Info(m.Desc().String())
 				}
 			}
 			done <- true
@@ -159,11 +166,10 @@ func main() {
 		<-done
 
 		if err == nil {
-			logInfo("Test scrape done in %s", time.Now().Sub(tStart))
-			logRaw("")
+			slog.Info("Test scrape done", "duration", time.Now().Sub(tStart))
 		} else {
 			if len(buf) > 0 {
-				logRaw("\n%s", buf)
+				slog.Debug("Scrape output", "output", string(buf))
 			}
 			ExitHandler.Errorf("Startup test: %s", err.Error())
 		}
@@ -173,7 +179,7 @@ func main() {
 	}
 
 	// Start serving
-	logInfo("Server starting on %s with metrics path %s", StartParams.ListenAddress, StartParams.Path)
+	slog.Info("Server starting", "listenAddress", StartParams.ListenAddress, "metricsPath", StartParams.Path)
 
 	if !StartParams.WithGoMetrics {
 		registry := prometheus.NewRegistry()
@@ -181,7 +187,7 @@ func main() {
 			logFatal("registry.Register failed: %s", err.Error())
 		}
 		handler := promhttp.HandlerFor(registry, promhttp.HandlerOpts{
-			ErrorLog: logger,
+			ErrorLog: &SlogErrorLogger{slog.Default()},
 		})
 		http.Handle(StartParams.Path, handler)
 	} else {
@@ -243,7 +249,7 @@ func (ex *exitHandler) Set(err error) error {
 	if ex.exitOnError {
 		logFatal("%s", err.Error())
 	} else if errDiffers {
-		logError("%s", err.Error())
+		slog.Error(err.Error())
 	}
 	return err
 }
