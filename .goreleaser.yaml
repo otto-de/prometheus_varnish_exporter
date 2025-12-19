@@ -4,6 +4,7 @@ version: 2
 before:
   hooks:
     - go mod tidy
+    - go test -v ./...
 
 builds:
   - binary: prometheus-varnish-exporter
