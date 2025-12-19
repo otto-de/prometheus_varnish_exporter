@@ -1,3 +1,9 @@
+# v1.8.0
+
+- Replace `log` with `slog` for structured logging (see [#6](https://github.com/otto-de/prometheus_varnish_exporter/pull/6))
+- Deprecated `-raw` and `-verbose` flags. Use `-log.level` and `-log-json` instead to control logging level amd format. Flags will be removed in next major release.
+- Log error on each failed scrape instead of only once on startup.
+
 # v1.7.0
 
 - Add `goreleaser` based release process
