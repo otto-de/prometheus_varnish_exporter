@@ -1,3 +1,7 @@
+# v1.8.1
+
+- Remove `VARNISH_VSM` env variable from docker entrypoint. If you need a custom path to the VSM you can use the `-n` flag to specify the path inside the command of the container. (default value is defined by `varnishstat` executable).
+
 # v1.8.0
 
 - Replace `log` with `slog` for structured logging (see [#6](https://github.com/otto-de/prometheus_varnish_exporter/pull/6))
