@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -168,7 +167,7 @@ func Test_VarnishMetrics(t *testing.T) {
 		VarnishVersion.parseVersion(version)
 		t.Logf("test scrape %s", VarnishVersion)
 
-		buf, err := ioutil.ReadFile(test)
+		buf, err := os.ReadFile(test)
 		if err != nil {
 			t.Fatal(err.Error())
 		}
@@ -266,7 +265,7 @@ func (tc *testCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (tc *testCollector) Collect(ch chan<- prometheus.Metric) {
-	buf, err := ioutil.ReadFile(tc.filepath)
+	buf, err := os.ReadFile(tc.filepath)
 	if err != nil {
 		tc.t.Fatal(err.Error())
 	}
