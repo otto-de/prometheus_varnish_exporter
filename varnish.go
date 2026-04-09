@@ -222,7 +222,7 @@ func executeVarnishstat(varnishstatExe string, params ...string) (*bytes.Buffer,
 // 'VBE.reload_20191014_091124_78599' as by varnishreload in 6+
 func findMostRecentVbeReloadPrefix(countersJSON map[string]any) string {
 	var mostRecentVbeReloadPrefix string
-	for vName, _ := range countersJSON {
+	for vName := range countersJSON {
 		// Checking only the required ".happy" stat
 		if strings.HasPrefix(vName, vbeReload) && strings.HasSuffix(vName, ".happy") {
 			dotAfterPrefixIndex := len(vbeReload) + strings.Index(vName[len(vbeReload):], ".")
