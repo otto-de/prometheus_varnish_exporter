@@ -223,7 +223,7 @@ type exitHandler struct {
 	err         error
 }
 
-func (ex *exitHandler) Errorf(format string, a ...interface{}) error {
+func (ex *exitHandler) Errorf(format string, a ...any) error {
 	return ex.Set(fmt.Errorf(format, a...))
 }
 

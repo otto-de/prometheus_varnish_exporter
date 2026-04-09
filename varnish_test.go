@@ -69,8 +69,8 @@ func Test_VarnishVersion(t *testing.T) {
 	}
 }
 
-func dummyBackendValue(backend string) (string, map[string]interface{}) {
-	return fmt.Sprintf("VBE.%s.happy", backend), map[string]interface{}{
+func dummyBackendValue(backend string) (string, map[string]any) {
+	return fmt.Sprintf("VBE.%s.happy", backend), map[string]any{
 		"description": "Happy health probes",
 		"type":        "VBE",
 		"ident":       backend,
@@ -194,27 +194,27 @@ func Test_VarnishMetrics(t *testing.T) {
 
 func Test_FindMostRecentVbeReloadPrefix(t *testing.T) {
 	type testConfig struct {
-		varnishCounters                   map[string]interface{}
+		varnishCounters                   map[string]any
 		expectedMostRecentVbeReloadPrefix string
 	}
 
 	for _, testConfig := range []testConfig{
 		// Varnish <= 4.0 has no duplicated stats on reload
-		{map[string]interface{}{
+		{map[string]any{
 			"VBE.default(127.0.0.1,,8080).happy": "any",
 		}, ""},
 		// Varnish 4.1 or later, not yet reloaded
-		{map[string]interface{}{
+		{map[string]any{
 			"VBE.boot.default.happy": "any",
 		}, ""},
 		// Varnish 4.1, reloaded 2 times
-		{map[string]interface{}{
+		{map[string]any{
 			"VBE.boot.default.happy":                     "any",
 			"VBE.reload_2019-08-29T100458.default.happy": "any",
 			"VBE.reload_2019-08-29T100459.default.happy": "any",
 		}, "VBE.reload_2019-08-29T100459"},
 		// Varnish 6+, reloaded 2 times
-		{map[string]interface{}{
+		{map[string]any{
 			"VBE.boot.default.happy":                         "any",
 			"VBE.reload_20191016_072034_54500.default.happy": "any",
 			"VBE.reload_20191016_072034_54501.default.happy": "any",
