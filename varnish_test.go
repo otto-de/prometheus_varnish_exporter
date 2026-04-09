@@ -114,7 +114,7 @@ func Test_VarnishBackendNames(t *testing.T) {
 			vIdentifier  string
 			vErr         error
 		)
-		if value, ok := data["description"]; ok && vErr == nil {
+		if value, ok := data["description"]; ok {
 			if vDescription, ok = value.(string); !ok {
 				vErr = fmt.Errorf("%s description it not a string", vName)
 			}
@@ -140,7 +140,7 @@ func Test_VarnishBackendNames(t *testing.T) {
 		if expected_backend != computed_backend {
 			t.Fatalf("backend %q != %q", computed_backend, expected_backend)
 		}
-		if expected_server != expected_server {
+		if expected_server != computed_server {
 			t.Fatalf("server %q != %q", computed_server, expected_server)
 		}
 
