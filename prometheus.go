@@ -53,7 +53,7 @@ func (pe *prometheusExporter) Describe(ch chan<- *prometheus.Desc) {
 		ch <- pe.version.Desc()
 	}
 
-	slog.Debug("prometheus.Collector.Describe", "duration", time.Now().Sub(start))
+	slog.Debug("prometheus.Collector.Describe", "duration", time.Since(start))
 }
 
 // Implements prometheus.Collector
@@ -98,7 +98,7 @@ func (pe *prometheusExporter) Collect(ch chan<- prometheus.Metric) {
 	if err != nil {
 		slog.Error("prometheus.Collector.Collect scrape failed", "error", err)
 	}
-	slog.Debug("prometheus.Collector.Collect", "duration", time.Now().Sub(start))
+	slog.Debug("prometheus.Collector.Collect", "duration", time.Since(start))
 }
 
 // utils

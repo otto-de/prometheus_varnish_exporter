@@ -166,7 +166,7 @@ func main() {
 		<-done
 
 		if err == nil {
-			slog.Info("Test scrape done", "duration", time.Now().Sub(tStart))
+			slog.Info("Test scrape done", "duration", time.Since(tStart))
 		} else {
 			if len(buf) > 0 {
 				slog.Debug("Scrape output", "output", string(buf))
