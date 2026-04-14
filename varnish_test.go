@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -15,31 +14,31 @@ var testFileVersions = []string{"3.0.5", "4.0.5", "4.1.1", "5.2.0", "6.0.0", "6.
 
 func Test_VarnishVersion(t *testing.T) {
 	tests := map[string]*varnishVersion{
-		"varnishstat (varnish-6.5.1 revision 1dae23376bb5ea7a6b8e9e4b9ed95cdc9469fb64)": &varnishVersion{
+		"varnishstat (varnish-6.5.1 revision 1dae23376bb5ea7a6b8e9e4b9ed95cdc9469fb64)": {
 			Major: 6, Minor: 5, Patch: 1, Revision: "1dae23376bb5ea7a6b8e9e4b9ed95cdc9469fb64",
 		},
-		"varnishstat (varnish-6.0.0 revision a068361dff0d25a0d85cf82a6e5fdaf315e06a7d)": &varnishVersion{
+		"varnishstat (varnish-6.0.0 revision a068361dff0d25a0d85cf82a6e5fdaf315e06a7d)": {
 			Major: 6, Minor: 0, Patch: 0, Revision: "a068361dff0d25a0d85cf82a6e5fdaf315e06a7d",
 		},
-		"varnishstat (varnish-5.2.0 revision 4c4875cbf)": &varnishVersion{
+		"varnishstat (varnish-5.2.0 revision 4c4875cbf)": {
 			Major: 5, Minor: 2, Patch: 0, Revision: "4c4875cbf",
 		},
-		"varnishstat (varnish-4.1.10 revision 1d090c5a08f41c36562644bafcce9d3cb85d824f)": &varnishVersion{
+		"varnishstat (varnish-4.1.10 revision 1d090c5a08f41c36562644bafcce9d3cb85d824f)": {
 			Major: 4, Minor: 1, Patch: 10, Revision: "1d090c5a08f41c36562644bafcce9d3cb85d824f",
 		},
-		"varnishstat (varnish-4.1.0 revision 3041728)": &varnishVersion{
+		"varnishstat (varnish-4.1.0 revision 3041728)": {
 			Major: 4, Minor: 1, Patch: 0, Revision: "3041728",
 		},
-		"varnishstat (varnish-4 revision)": &varnishVersion{
+		"varnishstat (varnish-4 revision)": {
 			Major: 4, Minor: -1, Patch: -1,
 		},
-		"varnishstat (varnish-3.0.5 revision 1a89b1f)": &varnishVersion{
+		"varnishstat (varnish-3.0.5 revision 1a89b1f)": {
 			Major: 3, Minor: 0, Patch: 5, Revision: "1a89b1f",
 		},
-		"varnish 2.0": &varnishVersion{
+		"varnish 2.0": {
 			Major: 2, Minor: 0, Patch: -1,
 		},
-		"varnish 1": &varnishVersion{
+		"varnish 1": {
 			Major: 1, Minor: -1, Patch: -1,
 		},
 	}
@@ -69,8 +68,8 @@ func Test_VarnishVersion(t *testing.T) {
 	}
 }
 
-func dummyBackendValue(backend string) (string, map[string]interface{}) {
-	return fmt.Sprintf("VBE.%s.happy", backend), map[string]interface{}{
+func dummyBackendValue(backend string) (string, map[string]any) {
+	return fmt.Sprintf("VBE.%s.happy", backend), map[string]any{
 		"description": "Happy health probes",
 		"type":        "VBE",
 		"ident":       backend,
@@ -114,7 +113,7 @@ func Test_VarnishBackendNames(t *testing.T) {
 			vIdentifier  string
 			vErr         error
 		)
-		if value, ok := data["description"]; ok && vErr == nil {
+		if value, ok := data["description"]; ok {
 			if vDescription, ok = value.(string); !ok {
 				vErr = fmt.Errorf("%s description it not a string", vName)
 			}
@@ -140,7 +139,7 @@ func Test_VarnishBackendNames(t *testing.T) {
 		if expected_backend != computed_backend {
 			t.Fatalf("backend %q != %q", computed_backend, expected_backend)
 		}
-		if expected_server != expected_server {
+		if expected_server != computed_server {
 			t.Fatalf("server %q != %q", computed_server, expected_server)
 		}
 
@@ -168,7 +167,7 @@ func Test_VarnishMetrics(t *testing.T) {
 		VarnishVersion.parseVersion(version)
 		t.Logf("test scrape %s", VarnishVersion)
 
-		buf, err := ioutil.ReadFile(test)
+		buf, err := os.ReadFile(test)
 		if err != nil {
 			t.Fatal(err.Error())
 		}
@@ -194,27 +193,27 @@ func Test_VarnishMetrics(t *testing.T) {
 
 func Test_FindMostRecentVbeReloadPrefix(t *testing.T) {
 	type testConfig struct {
-		varnishCounters                   map[string]interface{}
+		varnishCounters                   map[string]any
 		expectedMostRecentVbeReloadPrefix string
 	}
 
 	for _, testConfig := range []testConfig{
 		// Varnish <= 4.0 has no duplicated stats on reload
-		{map[string]interface{}{
+		{map[string]any{
 			"VBE.default(127.0.0.1,,8080).happy": "any",
 		}, ""},
 		// Varnish 4.1 or later, not yet reloaded
-		{map[string]interface{}{
+		{map[string]any{
 			"VBE.boot.default.happy": "any",
 		}, ""},
 		// Varnish 4.1, reloaded 2 times
-		{map[string]interface{}{
+		{map[string]any{
 			"VBE.boot.default.happy":                     "any",
 			"VBE.reload_2019-08-29T100458.default.happy": "any",
 			"VBE.reload_2019-08-29T100459.default.happy": "any",
 		}, "VBE.reload_2019-08-29T100459"},
 		// Varnish 6+, reloaded 2 times
-		{map[string]interface{}{
+		{map[string]any{
 			"VBE.boot.default.happy":                         "any",
 			"VBE.reload_20191016_072034_54500.default.happy": "any",
 			"VBE.reload_20191016_072034_54501.default.happy": "any",
@@ -266,7 +265,7 @@ func (tc *testCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (tc *testCollector) Collect(ch chan<- prometheus.Metric) {
-	buf, err := ioutil.ReadFile(tc.filepath)
+	buf, err := os.ReadFile(tc.filepath)
 	if err != nil {
 		tc.t.Fatal(err.Error())
 	}

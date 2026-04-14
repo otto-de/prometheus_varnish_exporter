@@ -12,7 +12,7 @@ type SlogErrorLogger struct {
 	logger *slog.Logger
 }
 
-func (l *SlogErrorLogger) Println(v ...interface{}) {
+func (l *SlogErrorLogger) Println(v ...any) {
 	l.logger.Error(fmt.Sprint(v...))
 }
 
@@ -38,7 +38,7 @@ func initSlogger(logLevel string, json bool) {
 	slog.SetDefault(slog.New(handler))
 }
 
-func logFatal(message string, args ...interface{}) {
+func logFatal(message string, args ...any) {
 	slog.Error(message, args...)
 	os.Exit(1)
 }
@@ -105,7 +105,7 @@ func fileExists(path string) bool {
 
 // data
 
-func stringProperty(data map[string]interface{}, key string) (string, error) {
+func stringProperty(data map[string]any, key string) (string, error) {
 	if value, ok := data[key]; ok {
 		if vStr, ok := value.(string); ok {
 			return vStr, nil

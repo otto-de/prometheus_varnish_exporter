@@ -65,14 +65,14 @@ func ScrapeVarnish(ch chan<- prometheus.Metric) ([]byte, error) {
 
 func ScrapeVarnishFrom(buf []byte, ch chan<- prometheus.Metric) ([]byte, error) {
 	// The output JSON annoyingly is not structured so that we could make a nice map[string]struct for it.
-	metricsJSON := make(map[string]interface{})
+	metricsJSON := make(map[string]any)
 	dec := json.NewDecoder(bytes.NewBuffer(buf))
 	dec.UseNumber()
 	if err := dec.Decode(&metricsJSON); err != nil {
 		return buf, err
 	}
 
-	countersJSON := make(map[string]interface{})
+	countersJSON := make(map[string]any)
 	// From Varnish 6.5 https://varnish-cache.org/docs/6.5/whats-new/upgrading-6.5.html#varnishstat
 	if metricsJSON["version"] != nil {
 		version_raw, ok := metricsJSON["version"].(json.Number)
@@ -85,7 +85,7 @@ func ScrapeVarnishFrom(buf []byte, ch chan<- prometheus.Metric) ([]byte, error) 
 		}
 		switch version {
 		case 1:
-			countersJSON = metricsJSON["counters"].(map[string]interface{})
+			countersJSON = metricsJSON["counters"].(map[string]any)
 		default:
 			return nil, fmt.Errorf("Unimplemented json stats version %d", version)
 		}
@@ -107,9 +107,9 @@ func ScrapeVarnishFrom(buf []byte, ch chan<- prometheus.Metric) ([]byte, error) 
 			slog.Warn("Found unexpected data from json", "name", vName, "raw", raw)
 			continue
 		}
-		data, ok := raw.(map[string]interface{})
+		data, ok := raw.(map[string]any)
 		if !ok {
-			slog.Warn("Failed to cast to map[string]interface{}", "name", vName, "raw", raw)
+			slog.Warn("Failed to cast to map[string]any", "name", vName, "raw", raw)
 			continue
 		}
 		var (
@@ -122,7 +122,7 @@ func ScrapeVarnishFrom(buf []byte, ch chan<- prometheus.Metric) ([]byte, error) 
 		)
 		flag, _ := stringProperty(data, "flag")
 
-		if value, ok := data["description"]; ok && vErr == nil {
+		if value, ok := data["description"]; ok {
 			if vDescription, ok = value.(string); !ok {
 				vErr = fmt.Errorf("%s description it not a string", vName)
 			}
@@ -220,9 +220,9 @@ func executeVarnishstat(varnishstatExe string, params ...string) (*bytes.Buffer,
 // Returns the most recent prefix for 'VBE.reload_' stats. Empty until first reload.
 // 'VBE.reload_2019-08-29T100458' as by varnish_reload_vcl in 4.1+
 // 'VBE.reload_20191014_091124_78599' as by varnishreload in 6+
-func findMostRecentVbeReloadPrefix(countersJSON map[string]interface{}) string {
+func findMostRecentVbeReloadPrefix(countersJSON map[string]any) string {
 	var mostRecentVbeReloadPrefix string
-	for vName, _ := range countersJSON {
+	for vName := range countersJSON {
 		// Checking only the required ".happy" stat
 		if strings.HasPrefix(vName, vbeReload) && strings.HasSuffix(vName, ".happy") {
 			dotAfterPrefixIndex := len(vbeReload) + strings.Index(vName[len(vbeReload):], ".")
