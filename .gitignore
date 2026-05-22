@@ -1,6 +1,7 @@
 bin
 
 .idea/
+.vscode/
 prometheus_varnish_exporter
 prometheus_varnish_exporter.exe
 # Added by goreleaser init:
