@@ -12,12 +12,9 @@ until Varnish is restarted.
 
 Advanced users can use `-n -N`, they are passed to `varnishstat`.
 
-The following versions of Varnish are known to work: `6.0.0`, `5.2.1`, `5.1.2`, `4.1.1`, `4.1.0`, `4.0.3` and `3.0.5`.
-Missing category groupings in 3.x like `MAIN.` are detected and added automatically for label names to be consistent
-across versions, assuming of course that the Varnish project does not remove/change the stats.
+Supported Varnish versions: **6.0 LTS** and newer (7.x, 8.x, 9.x). Older versions are not tested or supported.
 
-I won't make any backwards compatibility promises at this point. Your built queries can break on new versions if metric
-names or labels are refined. If you find bugs or have feature requests feel free to create issues or send PRs.
+Built queries can break on new versions if metric names or labels are refined. If you find bugs or have feature requests feel free to create issues or send PRs.
 
 # Installing and running
 
@@ -46,9 +43,6 @@ specified container.
 
     prometheus_varnish_exporter -docker-container-name <container_name>
 
-I still don't have an easy, clear and user-friendly way of running this exporter in a docker container. For community
-efforts and solutions see [this issue](https://github.com/jonnenauha/prometheus_varnish_exporter/issues/25#issuecomment-492546458).
-
 ## Images
 
 Container images are built and published to our GHCR registry as part of the release process. Images are built for
@@ -61,26 +55,6 @@ The image tags are in the format `<version>-varnish-<varnish-version>`. For exam
 # Grafana dashboards
 
 The example dashboard is available [in JSON format](dashboards/jonnenauha/dashboard.json). Feel free to send PRs for additional dashboards or improvements to existing ones.
-
-# Varnish 4 and VCL UUIDs
-
-Starting with version 1.2 `backend` and `server` labels are always set. For backend-related metrics and Varnish 4 the
-`server` tag will be set to the VCL UUIDs for that backend. Note that there might be multiple VCLs loaded at the same
-time and the `server` tag might not be meaningful in that case.
-
-To aggregate all loaded VCLs into per-backend metric the following
-Prometheus [recording rules](https://prometheus.io/docs/querying/rules/) are recommended:
-
-    backend:varnish_backend_bereq_bodybytes:sum = sum(varnish_backend_bereq_bodybytes) without (server)
-    backend:varnish_backend_bereq_hdrbytes:sum = sum(varnish_backend_bereq_hdrbytes) without (server)
-    backend:varnish_backend_beresp_bodybytes:sum = sum(varnish_backend_beresp_bodybytes) without (server)
-    backend:varnish_backend_beresp_hdrbytes:sum = sum(varnish_backend_beresp_hdrbytes) without (server)
-    backend:varnish_backend_conn:sum = sum(varnish_backend_conn) without (server)
-    backend:varnish_backend_happy:sum = sum(varnish_backend_happy) without (server)
-    backend:varnish_backend_pipe_hdrbytes:sum = sum(varnish_backend_pipe) without (server)
-    backend:varnish_backend_pipe_in:sum = sum(varnish_backend_pipe_in) without (server)
-    backend:varnish_backend_pipe_out:sum = sum(varnish_backend_pipe_out) without (server)
-    backend:varnish_backend_req:sum = sum(varnish_backend_req) without (server)
 
 # Build
 
