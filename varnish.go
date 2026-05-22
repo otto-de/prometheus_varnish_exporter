@@ -72,22 +72,22 @@ func ScrapeVarnishFrom(buf []byte, ch chan<- prometheus.Metric) ([]byte, error) 
 		return buf, err
 	}
 
-	countersJSON := make(map[string]any)
+	var countersJSON map[string]any
 	// From Varnish 6.5 https://varnish-cache.org/docs/6.5/whats-new/upgrading-6.5.html#varnishstat
 	if metricsJSON["version"] != nil {
 		version_raw, ok := metricsJSON["version"].(json.Number)
 		if !ok {
-			return nil, fmt.Errorf("Unhandled json stats version type: %T %#v", metricsJSON["version"], metricsJSON["version"])
+			return nil, fmt.Errorf("unhandled json stats version type: %T %#v", metricsJSON["version"], metricsJSON["version"])
 		}
 		version, err := version_raw.Int64()
 		if err != nil {
-			return nil, fmt.Errorf("Unhandled json stats version type: %s", err)
+			return nil, fmt.Errorf("unhandled json stats version type: %s", err)
 		}
 		switch version {
 		case 1:
 			countersJSON = metricsJSON["counters"].(map[string]any)
 		default:
-			return nil, fmt.Errorf("Unimplemented json stats version %d", version)
+			return nil, fmt.Errorf("unimplemented json stats version %d", version)
 		}
 	} else {
 		countersJSON = metricsJSON
@@ -282,7 +282,7 @@ func (v *varnishVersion) queryVersion() error {
 	if scanner := bufio.NewScanner(buf); scanner.Scan() {
 		return v.parseVersion(scanner.Text())
 	}
-	return fmt.Errorf("Failed to get varnishstat -V output")
+	return fmt.Errorf("failed to get varnishstat -V output")
 }
 
 func (v *varnishVersion) parseVersion(version string) error {
@@ -302,7 +302,7 @@ func (v *varnishVersion) parseVersion(version string) error {
 		}
 	}
 	if !v.Valid() {
-		return fmt.Errorf("Failed to resolve version from %q", version)
+		return fmt.Errorf("failed to resolve version from %q", version)
 	}
 	return nil
 }

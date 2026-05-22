@@ -79,7 +79,7 @@ func (pe *prometheusExporter) Collect(ch chan<- prometheus.Metric) {
 	hadError := ExitHandler.HasError()
 
 	_, err := ScrapeVarnish(ch)
-	ExitHandler.Set(err)
+	_ = ExitHandler.Set(err)
 
 	if err == nil {
 		if hadError {
@@ -247,12 +247,12 @@ func computePrometheusInfo(vName, vGroup, vIdentifier, vDescription string) (nam
 		fq := strings.ToLower(vName)
 		// Remove unique identifiers from name to group similar metrics by labeling
 		if len(vIdentifier) > 0 {
-			fq = strings.Replace(fq, "."+strings.ToLower(vIdentifier), "", -1)
+			fq = strings.ReplaceAll(fq, "."+strings.ToLower(vIdentifier), "")
 		}
 		// Make sure our group is prefixed only once
 		fq = prometheusTrimGroupPrefix(fq)
 		// Build fq name
-		name = exporterNamespace + "_" + vGroup + "_" + strings.Replace(fq, ".", "_", -1)
+		name = exporterNamespace + "_" + vGroup + "_" + strings.ReplaceAll(fq, ".", "_")
 		if swapName := fqNames[name]; len(swapName) > 0 {
 			name = swapName
 		}
