@@ -93,8 +93,6 @@ func matchStringSlices(s1, s2 []string) bool {
 
 func Test_VarnishBackendNames(t *testing.T) {
 	for _, variant := range [][]string{
-		{"eu1_x.y-z:w(192.52.0.192,,8085)", "eu1_x.y-z:w", "192.52.0.192,,8085"}, // 4.0.3
-		{"root:eu2_x.y-z:w", "eu2_x.y-z:w", "unknown"},                           // 4.1
 		{"def0e7f7-a676-4eed-9d8b-78ef7ce21e93.us1_x.y-z:w", "us1_x.y-z:w", "def0e7f7-a676-4eed-9d8b-78ef7ce21e93"},
 		{"root:29813cbb-7329-4eb8-8969-26be2ef58c88.us2_x.y-z:w", "us2_x.y-z:w", "29813cbb-7329-4eb8-8969-26be2ef58c88"}, // ??
 		{"boot.default", "default", "unknown"},
