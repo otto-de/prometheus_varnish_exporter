@@ -133,13 +133,13 @@ func main() {
 	}
 
 	// Test run or user explicitly wants to exit on any scrape errors during runtime.
-	ExitHandler.exitOnError = StartParams.Test == true || StartParams.ExitOnErrors == true
+	ExitHandler.exitOnError = StartParams.Test || StartParams.ExitOnErrors
 
 	slog.Info("Initializing application", "applicationName", ApplicationName, "applicationVersion", getVersion(false), "parameters", StartParams)
 
 	// Initialize
 	if err := VarnishVersion.Initialize(); err != nil {
-		ExitHandler.Errorf("Varnish version initialize failed: %s", err.Error())
+		_ = ExitHandler.Errorf("Varnish version initialize failed: %s", err.Error())
 	}
 	if VarnishVersion.Valid() {
 		slog.Info("Found varnishstat.", "varnishVersion", VarnishVersion)
@@ -171,7 +171,7 @@ func main() {
 			if len(buf) > 0 {
 				slog.Debug("Scrape output", "output", string(buf))
 			}
-			ExitHandler.Errorf("Startup test: %s", err.Error())
+			_ = ExitHandler.Errorf("Startup test: %s", err.Error())
 		}
 	}
 	if StartParams.Test {
@@ -197,7 +197,7 @@ func main() {
 
 	if StartParams.Path != "/" {
 		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte(`<html>
+			_, _ = w.Write([]byte(`<html>
     <head><title>Varnish Exporter</title></head>
     <body>
         <h1>Varnish Exporter</h1>
@@ -211,7 +211,7 @@ func main() {
 			// As noted in the "up" metric, needs some way to determine if everything is actually Ok.
 			// For now, this just lets us check that we're accepting connections
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprintln(w, "Ok")
+			_, _ = fmt.Fprintln(w, "Ok")
 		})
 	}
 	logFatalError(http.ListenAndServe(StartParams.ListenAddress, nil))

@@ -162,7 +162,9 @@ func Test_VarnishMetrics(t *testing.T) {
 	}
 	for _, version := range testFileVersions {
 		test := filepath.Join(dir, "test/scrape", version+".json")
-		VarnishVersion.parseVersion(version)
+		if err := VarnishVersion.parseVersion(version); err != nil {
+			t.Fatal(err)
+		}
 		t.Logf("test scrape %s", VarnishVersion)
 
 		buf, err := os.ReadFile(test)
@@ -281,7 +283,9 @@ func Test_PrometheusExport(t *testing.T) {
 	}
 	for _, version := range testFileVersions {
 		test := filepath.Join(dir, "test/scrape", version+".json")
-		VarnishVersion.parseVersion(version)
+		if err := VarnishVersion.parseVersion(version); err != nil {
+			t.Fatal(err)
+		}
 		t.Logf("test scrape %s", VarnishVersion)
 
 		registry := prometheus.NewRegistry()

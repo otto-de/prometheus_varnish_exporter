@@ -74,22 +74,6 @@ func startsWithAny(str string, prefixes []string, cs caseSensitivity) bool {
 	return false
 }
 
-func endsWith(str, postfix string, cs caseSensitivity) bool {
-	if cs == caseSensitive {
-		return strings.HasSuffix(str, postfix)
-	}
-	return strings.HasSuffix(strings.ToLower(str), strings.ToLower(postfix))
-}
-
-func endsWithAny(str string, postfixes []string, cs caseSensitivity) bool {
-	for _, postfix := range postfixes {
-		if endsWith(str, postfix, cs) {
-			return true
-		}
-	}
-	return false
-}
-
 // file
 
 // Returns if file/dir in path exists.
